@@ -1,4 +1,4 @@
-# Bienvenu au Post-it
+# Bienvenu Post-it
 
 ## Mode d'emploi
 
