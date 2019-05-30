@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/style2.css">
+		<title>Admin</title>
+	</head>
+  <script src="/prototype.js"></script>
+	<body id="adminbody">
+    <div border="1" id="admin">
+    <div> Green: création<br/>Blue : modification<br/> Yellow : effacement<br/>Red : administration</div>    
+    </div>
+    <a href="/">Page principale</a>
+    <script>
+      let table = $('admin');
+      async function nombreNotesAuteur()
+      {
+          await new Ajax.Request('/userAll', {
+                      method : 'post',
+                      onSuccess: function(response) {
+                        if (200 == response.status){
+                          // alert(response.responseText);
+                          user = response.responseJSON;
+                          for(u of user){
+                            let color="green";
+                            if(u.admin==1) color="blue";
+                            else if(u.admin==2) color="yellow";
+                            else if(u.admin==3) color="red";                           
+                            $(table).innerHTML+=`<button class="button" style="color:${color}">${u.login}</button>`;
+                          }
+                          $$('.button').forEach((o)=>{
+                            o.addEventListener('click',async ()=>{
+                              if(o.innerHTML=='guest' || o.innerHTML=='admin') {
+                                return;
+                              }
+                              let color = o.style.color;
+                              if(color=="green") {
+                                o.style.color="blue";
+                                await new Ajax.Request('/up', {
+                                        method : 'post',
+                                        parameters : {'login':o.innerHTML,'user':'admin'}        
+                                });
+                              }
+                              else if(color=="red"){
+                                o.style.color="green";
+                                await new Ajax.Request('/up', {
+                                        method : 'post',
+                                        parameters : {'login':o.innerHTML,'user':'admin'}        
+                                });
+                              }else if(color=="blue"){
+                                o.style.color="yellow";
+                                await new Ajax.Request('/up', {
+                                        method : 'post',
+                                        parameters : {'login':o.innerHTML,'user':'admin'}        
+                                });
+                              }else if(color=="yellow"){
+                                o.style.color="red";
+                                await new Ajax.Request('/up', {
+                                        method : 'post',
+                                        parameters : {'login':o.innerHTML,'user':'admin'}        
+                                });
+                              }                            
+                            });
+                          });
+                                                
+                        }                   
+                      }                      
+          });          
+      };
+      nombreNotesAuteur();
+    </script>
+	</body>
+</html>

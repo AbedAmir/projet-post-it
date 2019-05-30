@@ -1,0 +1,175 @@
+body{
+  margin : 0;
+  padding : 0;
+  font-family : sans-serif;
+  background : #266fb7;
+  overflow : hidden;
+}
+h1{
+  text-decoration: underline;
+  font-size : 35px;
+}
+.box{
+  width : 300px;
+
+  padding : 20px;
+  position : absolute;
+  top:50%;
+  left : 50%;
+  transform : translate(-50%,-50%);
+  background : white;
+  text-align : center;
+  border-radius : 20px;
+}
+.box input[type = "text" ], .box input[type = "password"]{
+  border : 2px solid black;
+  background : white;
+  display : block;
+  margin : 15px auto;
+  padding : 10px 10px;
+  text-align : center;
+  width : 200px;
+  outline : none;
+  color : black;
+  border-radius : 22px;
+  transition : 0.25px;
+}
+.box input[type = "submit"]{
+  border : 2px solid black;
+  background : white;
+  display : block;
+  margin : 20px auto;
+  padding : 0px 10px;
+  text-align : center;
+  width : 100px;
+  height : 25px;
+  outline : none;
+  color : black;
+  border-radius : 22px;
+  transition : 0.25px;
+}
+.boxDisconnect input[type = "submit"], .boxConnect input[type = "submit"]{
+  border : 2px solid black;
+  background : white;
+  display : block;
+  margin : 15px 2% auto auto;
+  padding : 0px 10px;
+  text-align : center;
+  width : 100px;
+  height : 25px;
+  outline : none;
+  color : black;
+  border-radius : 22px;
+  transition : 0.25px;
+}
+h1{
+  margin-bottom : 20px;
+}
+p{
+  /*margin-top:30px;*/
+  text-align : center;
+  font-family : sans-serif;
+  font-style: oblique;
+}
+
+
+.post-it {
+  padding: 8px 2px 2px;
+  background: #fffc7f none repeat scroll 0;
+  cursor: move;
+  height: 196px;
+  position: absolute;
+  width: 196px;
+  box-shadow: 5px 5px 7px rgba(33, 33, 33, 0.7);
+  resize: both;
+  overflow: hidden;
+  z-index:3;
+}
+.post-it textarea{
+  background-color : transparent;
+  height : 90%;
+  width : 90%;
+  font-family : cursive;
+  font-size : .5em;
+  color : black;
+  left : 2px;
+  position : absolute;
+  /*border: medium none;font-family : cursive;
+  font-size : .1em;*/
+  cursor : text;
+  top : 12px;
+  resize : both;
+ 
+}
+
+.post-it div:hover{
+	background:#FFFCAF;
+}
+
+.post-it button {
+	text-align: center;
+	margin-top:-8px;
+	width:8px;
+	height:8px;
+	display: block;
+	float: right;
+	border-radius:50%;
+	border:none;
+	font-weight: bold;
+  font-size: 15px;
+	font-family: Lucida Handwriting, Script MT Bold;
+	background-color: #FFFC7F;
+	color: #FFFC7F;
+}
+.post-it:hover button {
+	background-color: #FFFCAF;
+    color: #333;
+}
+.post-it button:hover {
+    color: red;
+}
+
+.post-it-handle-resize {
+  cursor : se-resize;
+  right: 1px;
+  bottom: 1px;
+}
+button.buttValidate {
+  border: 1px solid black;
+  background-color:green;
+  height: 20px;
+  width : 25px;
+  color:white;
+  position : absolute;
+  
+}
+button.buttDelete {
+  border: 1px solid black;
+  background-color:red;
+  height: 20px;
+  width : 25px;
+  color:white;
+}
+TextArea.TextArea{
+  margin-top : 10px;
+  margin-left : 1%;
+  margin-right : 1%;
+}
+.usersRefresh p{
+  margin : 0px 0px 0px 0px;
+  background-color:white;
+}
+
+.adminBody {
+  margin : auto auto auto auto;
+  padding : 0;
+  font-family : sans-serif;
+  background : white;
+  overflow : hidden;
+}
+
+.controlBar {
+  font-size: .2em;
+  color:black;
+  
+}

@@ -1,0 +1,450 @@
+<!-- This is a static file -->
+<!-- served from your routes in server.js -->
+
+<!-- You might want to try something fancier: -->
+<!-- html/nunjucks docs: https://mozilla.github.io/nunjucks/ -->
+<!-- pug: https://pugjs.org/ -->
+<!-- haml: http://haml.info/ -->
+<!-- hbs(handlebars): http://handlebarsjs.com/ -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Welcome to Glitch!</title>
+    <meta name="description" content="A cool thing made with Glitch">
+    <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="csrf-token" id="csrf-token" content="{{csrfToken}}">
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/style.css">
+    <!-- copy js codes to /public -->   
+    <script src="/Message.js"></script>
+    <script src="/prototype.js"></script>
+  </head>
+  <body>
+    {%if login==true%}
+    {%if admin=='admin'%}
+    <a href="/adminpage">Administration</a>
+    {%endif%}
+    <form class = "boxDisconnect do-not-add-dbc" method="POST" action = "/logout">
+      <input type ="submit" value ="Déconnexion">
+    </form><br/>
+    
+    {%else%}
+    <form class = "boxConnect do-not-add-dbc" method="POST" action = "/login">
+      <input type="hidden" name="_csrf" value="{{csrfToken}}">
+      <input type ="submit" value ="Connecter">
+    </form>
+    {%endif%}
+    <form id="usersRefresh"><p id="usersRefreshp" style="background-color:white;">Ceux qui ont laissé leurs messages : </p><input type="hidden" id="authorname" value="{{authorname}}"><input type="hidden" id="flag" value="false"><input type="hidden" id="flag2" value="false"></form>
+    <div id="principal">
+    <script src="/carousel.js" defer></script>
+    <link rel="stylesheet" href="/carousel.css">
+    <div class="scene">
+      <div class="carousel" id="carousel">
+        <div class="carousel__cell" id="0">1</div>
+        <div class="carousel__cell" id="1">2</div>
+        <div class="carousel__cell" id="2">3</div>
+        <div class="carousel__cell" id="3">4</div>
+        <div class="carousel__cell" id="4">5</div>
+        <div class="carousel__cell" id="5">6</div>
+        <div class="carousel__cell" id="6">7</div>
+        <div class="carousel__cell" id="7">8</div>
+        <div class="carousel__cell" id="8">9</div>
+        <div class="carousel__cell" id="9">10</div>
+        <div class="carousel__cell" id="10">11</div>
+        <div class="carousel__cell" id="11">12</div>
+        <div class="carousel__cell" id="12">13</div>
+        <div class="carousel__cell" id="13">14</div>
+        <div class="carousel__cell" id="14">15</div>
+      </div>
+    </div>
+    
+    <div class="carousel-options" id="carousel-options">
+      <p>
+        <label>
+          Cells
+          <input class="cells-range do-not-add-dbc opacity" type="range" min="3" max="15" value="9" />
+        </label>
+      </p>
+      <p>
+        <button class="do-not-add-dbc previous-button opacity">Previous</button>
+        <button class="do-not-add-dbc next-button opacity">Next</button>
+      </p>
+      <p>
+        Orientation:
+        <label>
+          <input class="do-not-add-dbc" type="radio" name="orientation" value="horizontal" checked />
+          horizontal
+        </label>
+        <label>
+          <input class="do-not-add-dbc" type="radio" name="orientation" value="vertical" />
+          vertical
+        </label>
+      </p>
+    </div>
+
+    <script>
+        let zindex=0;
+        let msg = new Message(null,null,null,null,null,null);
+        let currentId=0;
+        let user = null;
+        async function nombreNotesAuteur() //On affiche soit les notes de l'auteur qu'on a choisi si author posséde une valeur soit toutes les notes de tout les utlisateur
+        {
+          await new Ajax.Request('/user', {
+                      method : 'post',
+                      parameters :{'login':'guest'},
+                      credentials: 'same-origin', // <-- includes cookies in the request
+                      headers: {'CSRF-Token': $('csrf-token').getAttribute('content')},// <-- is the csrf token as a header
+                      onSuccess: async function(response) {
+                        if (200 == response.status){
+                          user = response.responseJSON[0] || { 'login' : 'guest' , 'admin' : 0 }; 
+                          // ...
+                          await new Ajax.Request('/liste', {
+                            method : 'post',
+                            parameters : {'authorname':$('authorname').value},
+                            onSuccess: function(response) {
+                            if (200 == response.status){
+                              for(let r of response.responseJSON)
+                              { 
+                                let board = $(r.board.toString());  
+                                setNote(r,board,1);
+                              }
+                              ajust();
+                            }
+                          }
+                          });
+                          $('authorname').value='';
+                        }
+                      }
+          });
+          
+        };
+        nombreNotesAuteur();
+      
+        //ajout d'un post
+        document.addEventListener('dblclick', async function(event) {
+          console.log(event);
+          if(event.target.className.indexOf('do-not-add-dbc')!=-1) return;
+          currentId = $('carousel').getAttribute('data-currentId');
+          let topOffset=event.offsetY;
+          let leftOffset=event.offsetX;
+          if(event.target != $(currentId.toString())) {
+            leftOffset=Math.random()*100000%parseInt(window.getComputedStyle($(currentId.toString())).getPropertyValue("width")); 
+            topOffset=Math.random()*100000%parseInt(window.getComputedStyle($(currentId.toString())).getPropertyValue("height"));
+          } 
+          msg={'text':'Votre post ici', 'time':new Date(), 'coordinateX':leftOffset, 'coordinateY':topOffset,'author':user,'board':currentId};
+          setNote(msg,$(currentId),0);
+        });
+      
+        // touch
+        $('carousel').addEventListener('touchstart', async function(event) {              
+          if(event.target.className.indexOf('do-not-add-dbc')!=-1) return;
+          if(event.targetTouches.length != 3) return;        
+          currentId = $('carousel').getAttribute('data-currentId');
+          let topOffset=event.targetTouches[0].clientY;
+          let leftOffset=event.targetTouches[0].clientX;
+          if(event.target != $(currentId.toString())) {
+            leftOffset=Math.random()*100000%parseInt(window.getComputedStyle($(currentId.toString())).getPropertyValue("width")); 
+            topOffset=Math.random()*100000%parseInt(window.getComputedStyle($(currentId.toString())).getPropertyValue("height"));
+          } 
+          msg={'text':'Votre post ici', 'time':new Date(), 'coordinateX':leftOffset, 'coordinateY':topOffset,'author':user,'board':currentId};
+          setNote(msg,$(currentId),0);           
+        });
+ 
+        // set notes opacity
+        $$('.opacity').forEach((o)=>{      
+            o.addEventListener('mouseup',()=>{
+              currentId=$(carousel).getAttribute('data-currentId');
+              if($$('.post-it')!=null){
+                $$('.post-it').forEach((p)=>{
+                  if(currentId==p.parentNode.id){
+                    p.style.opacity=1;
+                  }else{
+                    p.style.opacity=0.4;
+                    if(parseInt(window.getComputedStyle($(p)).getPropertyValue("width"))+parseInt(p.style.left)>parseInt(window.getComputedStyle($(currentId.toString())).getPropertyValue("width"))) 
+                    {
+                      p.style.left=parseInt(window.getComputedStyle($(currentId.toString())).getPropertyValue("width"))-parseInt(window.getComputedStyle($(p)).getPropertyValue("width"))-10+'px';
+                    }
+                    if(parseInt(window.getComputedStyle($(p)).getPropertyValue("height"))+parseInt(p.style.top)>parseInt(window.getComputedStyle($(currentId.toString())).getPropertyValue("height"))) 
+                    {                   
+                      p.style.top=parseInt(window.getComputedStyle($(currentId.toString())).getPropertyValue("height"))-parseInt(window.getComputedStyle($(p)).getPropertyValue("height"))-10+'px';
+                    }
+                    p.style.length='196px';
+                    p.style.width='196px';
+                  }
+                });
+              }
+            });
+        });  
+
+        // set a note ^ ^
+        function setNote(r,rBoard,load){
+            let element = document.createElement('div'); // le post-it
+            element.className='post-it';  
+            element.draggable = true;
+            element.id=Math.random().toString(36).substr(2); // https://www.cnblogs.com/sunshq/p/4171490.html
+            element.setAttribute("style","top:"+r.coordinateY+"px; left:"+r.coordinateX+"px; z-index:"+(zindex++)+";");
+             
+            element.setAttribute("data-author",r.author);
+            element.setAttribute("data-time",r.time);
+            let controlBar = document.createElement('div');
+            $(controlBar).innerHTML = r.author;
+            $(controlBar).innerHTML += '  ';
+            $(controlBar).innerHTML += r.time.toString().substring(0,10);
+            $(controlBar).className = 'controlBar';
+            
+            if(rBoard.id!=currentId) element.style.opacity=0.4; //reduire opacity pour les notes qui ne sont pas sur notre tableau actuel 
+            let delButton = document.createElement('button');
+            delButton.className = "buttDelete";
+            let textArea = document.createElement('textArea');
+            textArea.className = "TextArea";
+            textArea.draggable = false;
+             
+            if(load==0){ //Pour voir si c'est une nouvelle note ou pas
+              let validateButton = document.createElement('button');
+              validateButton.className = "buttValidate";
+              element.append(/*controlBar,*/delButton,textArea,validateButton);
+              $(validateButton).addEventListener('click',async (event)=>{
+                element.removeChild(validateButton);
+                msg.text=textArea.value;
+                msg.coordinateX=r.coordinateX;
+                msg.coordinateY=r.coordinateY;
+                msg.board=currentId;
+                msg.time=new Date();         
+                await new Ajax.Request('/user', {
+                  method : 'post',
+                  onSuccess: function(response) {
+                      if (200 == response.status){
+                        msg.author=user.login;
+                        let alea = Math.random().toString(36).substr(1);
+                        new Ajax.Request('/ajouter', {
+                          parameters : {'msg':JSON.stringify(msg),'flag':alea}, // transform msg into json
+                          onSuccess: function(response) {
+                            if (200 == response.status){
+                                $('flag').value=alea;
+                                alert("Note ajoutée");
+                            }
+                          },
+                          onFailure: function(response) {
+                            if (500 == response.status){
+                              alert("La note existe deja impossible de l'ajouter");
+                              element.parentNode.removeChild(element);
+                            }
+                          }
+                        });
+                      }
+                    }
+                  }); 
+            });
+            }else{
+              element.append(delButton,controlBar,textArea);
+            }
+             $(rBoard).append(element);
+             $(delButton).textContent='*';
+             //$(controlBar).innerHTML='X C H S';
+             $(textArea).value=r.text;
+            $(delButton).addEventListener('click',(e)=>{
+              let ele = e.target;
+              if(true==confirm("Vous voulez supprimer ce post ?\n ATTENTION! Vous ne pouvez que supprimer votre note")){
+                msg.text=ele.parentNode.lastChild.value;
+                new Ajax.Request('/user', {
+                method : 'post',
+                onSuccess: function(response) {
+                    if (200 == response.status){
+                      if(user.admin<=1){
+                        alert('Vous n\'avez pas de droits.');
+                        return;
+                      }
+                      msg.author=ele.parentNode.getAttribute("data-author");
+                      msg.time=ele.parentNode.getAttribute("data-time");
+                      let alea = Math.random().toString(36).substr(1);
+                      new Ajax.Request('/effacer', {
+                        parameters : {'msg':JSON.stringify(msg),'flag':alea,'admin':user.admin}, // transform msg into json
+                        onSuccess: function(response) {
+                          if (200 == response.status){
+                            $('flag').value=alea;
+                            alert("Note Supprimée");
+                            element.parentNode.removeChild(element);
+                          }
+                        },
+                        onFailure: function(response) {
+                          if (500 == response.status){
+                            alert("Impossible de supprimer la note");
+                          }
+                        }
+                      });
+                    }
+                  }
+                }); 
+              }
+            });
+            $(textArea).addEventListener('blur',async()=>{ //Modification
+              let tmp;
+              if(msg.text!=$(textArea).value){
+                tmp = msg.text;
+                msg.text=$(textArea).value;
+                msg.author=$(textArea).parentNode.getAttribute("data-author");
+                msg.time=$(textArea).parentNode.getAttribute("data-time");
+                let alea = Math.random().toString(36).substr(1);
+                await new Ajax.Request('/modifier', {
+                  method : 'post',
+                  parameters : {'msg':JSON.stringify(msg),'msgSupprime':tmp,'admin':user.admin,'flag':alea}, // transform msg into json
+                  onSuccess: function(response) {
+                          if (200 == response.status){
+                            $('flag').value=alea;
+                          }
+                        }
+                }); 
+              }
+              $("carousel-options").style.display='';
+            });
+            $(textArea).addEventListener('focus',(event)=>{
+              if($(textArea).value=='Votre post ici')
+                $(textArea).value='';
+              msg.text=$(textArea).value;
+              $("carousel-options").style.display='none';
+            });  
+          
+            //drag & drop
+            //la différence entre point cliqué et point du post
+            let posX; 
+            let posY;       
+            $(element).addEventListener('dragstart',(e)=>{
+                let eleTarget = e.target;
+                posX = e.clientX - parseInt(eleTarget.style.left); 
+                posY = e.clientY - parseInt(eleTarget.style.top);
+            });
+            $(element).addEventListener('dragend',(e)=>{ 
+                let eleTarget = e.target;
+                eleTarget.style.left = (e.clientX - posX) + "px"; 
+                eleTarget.style.top = (e.clientY - posY) + "px";        
+            });
+            // show in the front with z-index
+            $(element).addEventListener('mousedown',(e)=>{
+                let eleTarget = e.target;
+                let styleStr = $(eleTarget).getAttribute('style');
+                if(null==styleStr) return;
+                let newStyle='';
+                let other = styleStr.split(';');
+                other.forEach((o)=>{
+                  if(o.indexOf('z-index')==-1){
+                    newStyle+=o+';';
+                  }else{
+                    newStyle+='z-index:'+(++zindex)+';';
+                  }
+                });
+                $(eleTarget).setAttribute('style',newStyle);
+              });
+            //touch
+            $(element).addEventListener('touchstart',(e)=>{
+                let eleTarget = e.target;
+                let styleStr = $(eleTarget).getAttribute('style');
+                if(null==styleStr) return;
+                let newStyle='';
+                let other = styleStr.split(';');
+                other.forEach((o)=>{
+                  if(o.indexOf('z-index')==-1){
+                    newStyle+=o+';';
+                  }else{
+                    newStyle+='z-index:'+(++zindex)+';';
+                  }
+                });
+                $(eleTarget).setAttribute('style',newStyle);
+                posX = parseInt(e.targetTouches[0].clientX) - parseInt(eleTarget.style.left); 
+                posY = parseInt(e.targetTouches[0].clientY) - parseInt(eleTarget.style.top);
+                $(element).addEventListener('touchmove',(e)=>{ 
+                let eleTarget = e.target;
+                eleTarget.style.left = (e.targetTouches[0].clientX - posX) + "px"; 
+                eleTarget.style.top = (e.targetTouches[0].clientY - posY) + "px";        
+              });
+            });
+    
+          // zoommer et dézoommer
+          // http://blogs.sitepointstatic.com/examples/tech/mouse-wheel/index.html
+          $(element).addEventListener('wheel', (event)=> {
+              $(element).style.width = window.getComputedStyle($(element)).width;
+              $(element).style.height = window.getComputedStyle($(element)).height;
+              var e = window.event || event; // old IE support   
+              var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail))); 
+              $(element).style.width = Math.max(196, Math.min(800, parseInt($(element).style.width) + (40 * delta))) + "px";
+              $(element).style.height = Math.max(196, Math.min(800, parseInt($(element).style.height) + (40 * delta))) + "px";
+          });
+        }      
+        //Affichage barre des users  
+        new Ajax.Request('/userAll', {
+                            method : 'post',
+                            onSuccess: function(response) {
+                            if (200 == response.status){
+                              for(let r of response.responseJSON)
+                              { 
+                                $('usersRefreshp').innerHTML+=`<a href=/${r.login}>${r.login}</a> `;
+                              }
+                              $('usersRefreshp').innerHTML+=`<a href=/><b>Tous</b></a> `
+                            }
+                          }
+        });
+        new Ajax.Request('/flag', {
+                            onSuccess: function(response) {
+                            if (200 == response.status){
+                                $('flag').value=response.responseText;
+                            }
+                          }
+          });
+      //Synchronisation
+        function refreshNotify(){
+          new Ajax.Request('/flag', {
+                 onSuccess: function(response) {
+                    if (200 == response.status){
+                              if($('flag').value!=response.responseText){
+                                  // alert('Nouveau message arrive'); 
+                                  $('flag').value=response.responseText;
+                                  nombreNotesAuteur();
+                              }
+                        }
+                    }
+          });
+        }
+      
+        function refresh() // Mauvaise idée d'utilisé la fonction reflesh ça marche pas bien -- Fonction non utilisé
+        {
+          cleanBoardBeforeInsert();
+          nombreNotesAuteur();
+        }
+
+        setInterval('refreshNotify()',10000);
+
+        function cleanBoardBeforeInsert(){ // -- Fonction non utilisé
+          for(let i=0;i<15;i++)
+          {
+            document.getElementById(i.toString()).innerHTML = "";
+          }
+        }
+          
+          
+       function ajust(){
+         if($$('.post-it')!=null){
+                $$('.post-it').forEach((p)=>{
+                  if(currentId!=p.parentNode.id){
+                    
+                    if(parseInt(window.getComputedStyle($(p)).getPropertyValue("width"))+parseInt(p.style.left)>parseInt(window.getComputedStyle($(currentId.toString())).getPropertyValue("width"))) 
+                    {
+                      p.style.left=parseInt(window.getComputedStyle($(currentId.toString())).getPropertyValue("width"))-parseInt(window.getComputedStyle($(p)).getPropertyValue("width"))-10+'px';
+                    }
+                    if(parseInt(window.getComputedStyle($(p)).getPropertyValue("height"))+parseInt(p.style.top)>parseInt(window.getComputedStyle($(currentId.toString())).getPropertyValue("height"))) 
+                    {                   
+                      p.style.top=parseInt(window.getComputedStyle($(currentId.toString())).getPropertyValue("height"))-parseInt(window.getComputedStyle($(p)).getPropertyValue("height"))-10+'px';
+                    }
+                    p.style.length='196px';
+                    p.style.width='196px';
+                  }
+                });
+              }
+       }
+      </script>
+    
+    </div>
+  </body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Welcome to Glitch!</title>
+    <meta name="description" content="A cool thing made with Glitch">
+    <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" id="csrf-token" content="{{csrfToken}}">
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/style.css">
+    <!-- copy js codes to /public -->   
+    <script src="/Message.js"></script>
+    <script src="/prototype.js"></script>
+  </head>
+  <body>
+    
+    <form class = "box" method="POST" action = "/login">
+      <h1>Log-in</h1>
+      <input type = "text" name="login" placeholder="Username" value="admin">
+      <input type = "password" name="password" placeholder="Password" value="admin">
+      <input type ="submit">
+      <p class="inscriptionPara">
+        Pas encore inscrit ? <a href="/formInscription">Inscrivez-vous ici !</a>
+      </p> 
+      
+      {% if error %}
+        {{error}}
+      {%else%}
+      {% endif %}
+      
+    </form>
+  </body>
+</html>
